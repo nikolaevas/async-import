@@ -11,8 +11,7 @@ use Magento\Framework\Validation\ValidationResult;
 use Magento\Framework\Validation\ValidationResultFactory;
 use Magento\AsynchronousImportDataExchangingApi\Api\Data\ImportInterface;
 use Magento\AsynchronousImportDataExchangingApi\Model\ImportValidatorInterface;
-// TODO: remove dependency
-use Ramsey\Uuid\Uuid;
+use Magento\Framework\DataObject\IdentityValidatorInterface;
 
 /**
  * Check that "uuid" value is valid
@@ -25,11 +24,20 @@ class UuidValidator implements ImportValidatorInterface
     private $validationResultFactory;
 
     /**
-     * @param ValidationResultFactory $validationResultFactory
+     * @var IdentityValidatorInterface
      */
-    public function __construct(ValidationResultFactory $validationResultFactory)
-    {
+    private $identityValidator;
+
+    /**
+     * @param ValidationResultFactory    $validationResultFactory
+     * @param IdentityValidatorInterface $identityValidator
+     */
+    public function __construct(
+        ValidationResultFactory $validationResultFactory,
+        IdentityValidatorInterface $identityValidator
+    ) {
         $this->validationResultFactory = $validationResultFactory;
+        $this->identityValidator = $identityValidator;
     }
 
     /**
@@ -41,7 +49,7 @@ class UuidValidator implements ImportValidatorInterface
 
         if ('' === trim($value)) {
             $errors[] = __('"%field" can not be empty.', ['field' => ImportInterface::UUID]);
-        } elseif (!Uuid::isValid($value)) {
+        } elseif (!$this->identityValidator->isValid($value)) {
             $errors[] = __('"The uuid "%uuid" is not valid.', ['uuid' => $value]);
         } else {
             $errors = [];
